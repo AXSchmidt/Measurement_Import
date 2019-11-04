@@ -23,11 +23,12 @@ class Sampling:
         self.data.append("{2017-01-03T10:02:01, TEMP, 35.82}")
         self.data.append("{2017-01-03T10:05:00, SPO2, 97.17}")
         self.data.append("{2017-01-03T10:05:01, SPO2, 95.08}")
-        return(self.sample("2017-01-01T00:00:00", self.data))
-    
-    def printMeasurementList(self, list):
-        for m in list:
-            print(m.toString())
+        # sort data and delete redundant data:
+        sortedList = self.sample("2017-01-01T00:00:00", self.data)
+        # outpur
+        for v in sortedList:
+            for m in v[1]:
+                print(m.toString())
         
     # Convert String to Class Measurement
     def strToMeasurement(self, string):
@@ -65,7 +66,6 @@ class Sampling:
     def sample(self, startOfSampling, unsampledMeasurement):
         startTime = self.strToDateTime(startOfSampling)
         # get all measurement types
-        print(unsampledMeasurement)
         output = []
         measurement_types = MeasurementType()
         for m_type in measurement_types.measurementTypes:
@@ -73,20 +73,20 @@ class Sampling:
     	# insert unsampledMeasurement
         for uMeasurement in unsampledMeasurement:
             measurement = self.strToMeasurement(uMeasurement)
-            for i in range(len(output)):
-                if output[i][0] == measurement.measurementType:
-                    output[i][1].append(measurement)
+            if startTime <= self.strToDateTime(measurement.measurementTime):
+                for i in range(len(output)):
+                    if output[i][0] == measurement.measurementType:
+                        output[i][1].append(measurement)
         # sort Values in Measurements
         for v in output:
             v[1].sort(key=lambda m: m.measurementTime)
-            self.printMeasurementList(v[1])
-            # delete redundant data - v[1] = measurements
+            # delete redundant data; v[1] = list<Measurement>
             last_time = datetime.datetime.now()
             for m in reversed(v[1]):
-                dt = self.strToRoundDateTime(m.measurementTime)
-                if last_time == dt:
+                measurementTime = self.strToRoundDateTime(m.measurementTime)
+                if last_time == measurementTime:
                     v[1].remove(m)
                 else:
-                    last_time = dt
-                    m.measurementTime = dt.strftime(self.datetime_format)
+                    last_time = measurementTime
+                    m.measurementTime = measurementTime.strftime(self.datetime_format)
         return output

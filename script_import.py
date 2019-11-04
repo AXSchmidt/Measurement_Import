@@ -1,8 +1,8 @@
 # https://pythonbuddy.com/
 
 import datetime
-import MeasurementType
-import Measurement
+from class_measurementtype import MeasurementType
+from class_measurement import Measurement
 
 class Sampling:
     datetime_format = '%Y-%m-%dT%H:%M:%S'
@@ -25,7 +25,7 @@ class Sampling:
         self.data.append("{2017-01-03T10:05:01, SPO2, 95.08}")
         # sort data and delete redundant data:
         sortedList = self.sample("2017-01-01T00:00:00", self.data)
-        # outpur
+        # output
         for v in sortedList:
             for m in v[1]:
                 print(m.toString())
@@ -50,7 +50,7 @@ class Sampling:
         if dt == dt - datetime.timedelta(minutes=dt.minute % 5, seconds=dt.second):
             return dt
         else:
-        	return dt - datetime.timedelta(minutes=-5+dt.minute % 5, seconds=dt.second)
+            return dt - datetime.timedelta(minutes=-5+dt.minute % 5, seconds=dt.second)
     
     def strToRoundDateTime(self, string):
         return self.roundTime(self.strToDateTime(string))

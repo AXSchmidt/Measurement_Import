@@ -1,2 +1,3 @@
 class MeasurementType:
-    measurementTypes = ["temperature", "spO2", "heartRate"] 
+    measurementTypes= ["TEMO", "SPO2", "HRAT"] 
+    measurementTypesLong = ["temperature", "spO2", "heartRate"] 

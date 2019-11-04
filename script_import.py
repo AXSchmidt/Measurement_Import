@@ -50,4 +50,7 @@ class Sampling:
             for i in range(len(output)):
                 if output[i][0] == measurement.measurementType:
                 	output[i][1].append(measurement)
+        # sort Values in Measurements
+        for v in output:
+            v[1].sort(key=lambda m: m.measurementValue)
         return output

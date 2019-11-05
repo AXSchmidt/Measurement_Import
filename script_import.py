@@ -8,16 +8,16 @@ class Sampling:
     
     def __init__(self):
         self.data = []
-        
-    # imports a file with sample data into the object    
+
     def importfile(self, file):
+        '''imports a file with sample data into the object'''
         self.data.clear()
         f = open(file, "r")
         for line in f:
             self.data.append(line)
-        
-    # Convert String to Class Measurement
+
     def strToMeasurement(self, string):
+        '''Convert String to Class Measurement'''
         while string[0] == "{":
             string = string[1:]
         while string[-1] == "}":
@@ -27,30 +27,36 @@ class Sampling:
             return Measurement(li[0].strip(), li[2].strip(), li[1].strip())
         else:
             return Measurement(self.datetime_default, "", "")
-    
-    # Convert String to DateTime
+
     def strToDateTime(self, string):
+        '''Convert String to DateTime'''
         try:
             datetime_object = datetime.datetime.strptime(string, self.datetime_format)
         except ValueError as ve:
             datetime_object = datetime.datetime.strptime(self.datetime_default, self.datetime_format)   
         return datetime_object
-    
-    # Rounds up the time to the next five minutes
+
     def roundTime(self, datetime_object):
+        '''Rounds up the time to the next five minutes'''
         # when there is nothing to round, return original time...
         if datetime_object == datetime_object - datetime.timedelta(minutes = datetime_object.minute % 5, seconds = datetime_object.second):
             return datetime_object
         # otherwise add 5 minutes, and floor
         else:
             return datetime_object - datetime.timedelta(minutes=-5 + datetime_object.minute % 5, seconds = datetime_object.second)
-    
-    # Rounds up a Time String the next five minutes
+
     def strToRoundDateTime(self, string):
+        '''Rounds up a Time String the next five minutes'''
         return self.roundTime(self.strToDateTime(string))
         
     # main function: samples data    
     def sample(self, startOfSampling, unsampledMeasurement):
+        '''
+        Imports sorted time-based measurement data from medical devices grouped by measurementtype
+        :param startOfSampling: ignore data before
+        :param unsampledMeasurement: unsorted list auf measurement
+        :return: List<MeasurementType, List<Measurement>>
+        '''
         startTime = self.strToDateTime(startOfSampling)
         # get all measurement types
         output = []

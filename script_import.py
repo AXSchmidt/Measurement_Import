@@ -2,7 +2,7 @@
 ## Description:
 ## Imports time-based measurement data from medical devices
 ##################################################
-## Author: Alexander Schmit
+## Author: Alexander Schmidt
 ## Copyright: 2019/11/01, Sampling
 ## Version: 0.9.0
 ##################################################

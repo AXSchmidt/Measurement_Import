@@ -1,34 +1,29 @@
-# https://pythonbuddy.com/
+##################################################
+## Description:
+## Imports time-based measurement data from medical devices
+##################################################
+## Author: Alexander Schmit
+## Copyright: 2019/11/01, Sampling
+## Version: 0.9.0
+##################################################
 
 import datetime
 from class_measurementtype import MeasurementType
 from class_measurement import Measurement
 
 class Sampling:
-    datetime_format = '%Y-%m-%dT%H:%M:%S'
+    datetime_format = "%Y-%m-%dT%H:%M:%S"
+    datetime_default = "1900-01-01T00:00:00"
     
     def __init__(self):
         self.data = []
         
-    def test_file(self):
-        self.importfile("measurement_data.json")
-        return(self.sample("2017-01-01T00:00:00", self.data))
-        
-    def test(self):
+    # imports a file with sample data into the object    
+    def importfile(self, file):
         self.data.clear()
-        self.data.append("{2017-01-03T10:04:45, TEMP, 35.79}")
-        self.data.append("{2017-01-03T10:01:18, SPO2, 98.78}")
-        self.data.append("{2017-01-03T10:09:07, TEMP, 35.01}")
-        self.data.append("{2017-01-03T10:03:34, SPO2, 96.49}")
-        self.data.append("{2017-01-03T10:02:01, TEMP, 35.82}")
-        self.data.append("{2017-01-03T10:05:00, SPO2, 97.17}")
-        self.data.append("{2017-01-03T10:05:01, SPO2, 95.08}")
-        # sort data and delete redundant data:
-        sortedList = self.sample("2017-01-01T00:00:00", self.data)
-        # output
-        for v in sortedList:
-            for m in v[1]:
-                print(m.toString())
+        f = open(file, "r")
+        for line in f:
+            self.data.append(line)
         
     # Convert String to Class Measurement
     def strToMeasurement(self, string):
@@ -36,31 +31,32 @@ class Sampling:
             string = string[1:]
         while string[-1] == "}":
             string = string[:-1]
-        li = list(string.split(", "))      
-        if len(li) >= 3:
-            return Measurement(li[0], li[2], li[1])
+        li = list(string.split(","))      
+        if len(li) == 3:
+            return Measurement(li[0].strip(), li[2].strip(), li[1].strip())
         else:
-            return Measurement("1900-01-01T00:00:00", "", "")
+            return Measurement(self.datetime_default, "", "")
     
     # Convert String to DateTime
     def strToDateTime(self, string):
-        return datetime.datetime.strptime(string, self.datetime_format)
+        try:
+            datetime_object = datetime.datetime.strptime(string, self.datetime_format)
+        except ValueError as ve:
+            datetime_object = datetime.datetime.strptime(self.datetime_default, self.datetime_format)   
+        return datetime_object
     
-    def roundTime(self, dt):
-        if dt == dt - datetime.timedelta(minutes=dt.minute % 5, seconds=dt.second):
-            return dt
+    # Rounds up the time to the next five minutes
+    def roundTime(self, datetime_object):
+        # when there is nothing to round, return original time...
+        if datetime_object == datetime_object - datetime.timedelta(minutes = datetime_object.minute % 5, seconds = datetime_object.second):
+            return datetime_object
+        # otherwise add 5 minutes, and floor
         else:
-            return dt - datetime.timedelta(minutes=-5+dt.minute % 5, seconds=dt.second)
+            return datetime_object - datetime.timedelta(minutes=-5 + datetime_object.minute % 5, seconds = datetime_object.second)
     
+    # Rounds up a Time String the next five minutes
     def strToRoundDateTime(self, string):
         return self.roundTime(self.strToDateTime(string))
-        
-    # imports a file with sample data into the object    
-    def importfile(self, file):
-        self.data.clear()
-        f = open(file, "r")
-        for x in f:
-            self.data.append(x)
         
     # main function: samples data    
     def sample(self, startOfSampling, unsampledMeasurement):
@@ -68,8 +64,8 @@ class Sampling:
         # get all measurement types
         output = []
         measurement_types = MeasurementType()
-        for m_type in measurement_types.measurementTypes:
-            output.append([m_type, []])
+        for measurement_type in measurement_types.measurementTypes:
+            output.append([measurement_type, []])
     	# insert unsampledMeasurement
         for uMeasurement in unsampledMeasurement:
             measurement = self.strToMeasurement(uMeasurement)
@@ -78,15 +74,15 @@ class Sampling:
                     if output[i][0] == measurement.measurementType:
                         output[i][1].append(measurement)
         # sort Values in Measurements
-        for v in output:
-            v[1].sort(key=lambda m: m.measurementTime)
-            # delete redundant data; v[1] = list<Measurement>
+        for entity in output:
+            entity[1].sort(key=lambda m: m.measurementTime)
+            # delete redundant data; entity[1] = list<Measurement>
             last_time = datetime.datetime.now()
-            for m in reversed(v[1]):
-                measurementTime = self.strToRoundDateTime(m.measurementTime)
+            for obj in reversed(entity[1]):
+                measurementTime = self.strToRoundDateTime(obj.measurementTime)
                 if last_time == measurementTime:
-                    v[1].remove(m)
+                    entity[1].remove(obj)
                 else:
                     last_time = measurementTime
-                    m.measurementTime = measurementTime.strftime(self.datetime_format)
+                    obj.measurementTime = measurementTime.strftime(self.datetime_format)
         return output

@@ -1,12 +1,3 @@
-##################################################
-## Description:
-## Imports time-based measurement data from medical devices
-##################################################
-## Author: Alexander Schmidt
-## Copyright: 2019/11/01, Sampling
-## Version: 0.9.0
-##################################################
-
 import datetime
 from class_measurementtype import MeasurementType
 from class_measurement import Measurement
